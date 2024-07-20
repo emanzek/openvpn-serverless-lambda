@@ -1,0 +1,4 @@
+certifi
+charset_normalizer
+idna
+requests
