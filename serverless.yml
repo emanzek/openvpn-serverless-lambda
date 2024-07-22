@@ -31,7 +31,7 @@ provider:
           Resource: arn:aws:s3:::openvpn-bot-storage
   region: ap-southeast-1
   layers:
-      - arn:aws:lambda:ap-southeast-1:178903630933:layer:telegram_bot_dependencies:2
+      - arn:aws:lambda:${aws:region}:${aws:accountId}:layer:telegram_bot_dependencies:9
   deploymentBucket:
     name: openvpn-bot-storage
     serverSideEncryption: AES256
@@ -42,9 +42,12 @@ plugins:
 
 layers:
   telegram_bot_dependencies:
-    path: layers
+    path: layers/
     compatibleRuntimes:
       - python3.12
+    compatibleArchitectures:
+      - x86_64
+      - arm64
 
 functions:
   common:

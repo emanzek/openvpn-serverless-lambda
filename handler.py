@@ -22,6 +22,7 @@ def main(event, context):
     request_body = json.loads(event['body'])
     command = request_body['message']['text']
     message_id = request_body['message']['message_id']
+    message_date = request_body['message']['date']
     
     match command:
         case '/start':
@@ -62,6 +63,8 @@ def main(event, context):
             send_text(message)
         case _:
             try:
+                message = "This is what u trying to send: {} at {}".format(message_id,message_date)
+                send_text(message)
                 decrypt_token = authentication.login(command)
 
             except Exception as e:

@@ -2,3 +2,5 @@ certifi
 charset_normalizer
 idna
 requests
+cffi
+cryptography
