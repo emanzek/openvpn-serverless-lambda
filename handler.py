@@ -22,7 +22,7 @@ def main(event, context):
     request_body = json.loads(event['body'])
     command = request_body['message']['text']
     message_id = request_body['message']['message_id']
-    message_date = request_body['message']['date']
+    message_time = request_body['message']['date']
     
     match command:
         case '/start':
@@ -34,9 +34,8 @@ def main(event, context):
             message = "We've sent you a line of token through the email, please submit it in here with session_id to get authorized."
             send_text(message)
         case '/create':
-            if authentication.isActive():
+            if authentication.isActive(message_id):
                 logger.info("Create started")
-                send_text("Creating the instance now...")
                 try:
                     message = ec2.create()
                 except Exception as e:
@@ -45,9 +44,8 @@ def main(event, context):
                 message = "Permission denied!"
             send_text(message)
         case '/destroy':
-            if authentication.isActive():    
+            if authentication.isActive(message_id):    
                 logger.info("Destroy started")
-                send_text("Terminating...")
                 try:
                     message = ec2.destroy()
                 except Exception as e:
@@ -63,22 +61,19 @@ def main(event, context):
             send_text(message)
         case _:
             try:
-                message = "This is what u trying to send: {} at {}".format(message_id,message_date)
-                send_text(message)
-                decrypt_token = authentication.login(command)
+                data = {
+                    'token': command,
+                    'time': message_time,
+                    'msg_id': message_id
+                }
+                message = authentication.login(data)
 
             except Exception as e:
-                message = "Nope, you can't do that here sir. Please try again."
+                message = f"Nope, you can't do that here sir.\n{e}"
             logger.info("Different command sent!")
             send_text(message)
-    
-    body = {
-        "message": "Message sent to telegram!",
-        "sent": "Hello from Lambda!"
-    }
 
     response = {"statusCode": 200, "body": json.dumps(request_body)}
-
     return response
 
 def send_text(message):

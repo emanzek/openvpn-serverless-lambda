@@ -8,6 +8,10 @@ service: openvpn-serverless-lambda
 provider:
   name: aws
   runtime: python3.12
+  region: ap-southeast-1
+  deploymentBucket:
+    name: openvpn-bot-storage
+    serverSideEncryption: AES256
   iam:
     role: 
       statements:
@@ -29,29 +33,31 @@ provider:
           Action:
             - "s3:PutObject"
           Resource: arn:aws:s3:::openvpn-bot-storage
-  region: ap-southeast-1
-  layers:
-      - arn:aws:lambda:${aws:region}:${aws:accountId}:layer:telegram_bot_dependencies:9
-  deploymentBucket:
-    name: openvpn-bot-storage
-    serverSideEncryption: AES256
 
 plugins:
   - serverless-iam-roles-per-function
   - serverless-deployment-bucket
+  - serverless-layers
 
-layers:
-  telegram_bot_dependencies:
-    path: layers/
-    compatibleRuntimes:
-      - python3.12
-    compatibleArchitectures:
-      - x86_64
-      - arm64
+custom:
+  serverless-layers:
+    - common:
+        functions:
+          - common
+          - s3Trigger
+        dependenciesPath: ./layers/common/requirements.txt
 
 functions:
   common:
     handler: handler.main
+    environment:
+      BOT_TOKEN: ${ssm:/telegram_bot_token}
+      BOT_CHAT_ID: ${ssm:/telegram_bot_chatid}
+      CF_TEMPLATE_URL: ${ssm:/cf_template_url}
+    events:
+      - httpApi:
+          path: /common
+          method: post
     iamRoleStatementsName: common-openvpn-serverless-lambda-lambdaRole
     iamRoleStatements:
       - Effect: "Allow"        
@@ -76,22 +82,9 @@ functions:
           - dynamodb:GetItem
           - dynamodb:PutItem
         Resource: "*"
-    environment:
-      BOT_TOKEN: ${ssm:/telegram_bot_token}
-      BOT_CHAT_ID: ${ssm:/telegram_bot_chatid}
-      CF_TEMPLATE_URL: ${ssm:/cf_template_url}
-    events:
-      - httpApi:
-          path: /common
-          method: post
+
   s3Trigger:
     handler: handler.clientUploaded
-    iamRoleStatementsName: s3Trigger-openvpn-serverless-lambda-lambdaRole
-    iamRoleStatements:
-      - Effect: "Allow"        
-        Action:
-          - s3:GetObject        
-        Resource: "arn:aws:s3:::openvpn-bot-storage/client/*"
     environment:
       BOT_TOKEN: ${ssm:/telegram_bot_token}
       BOT_CHAT_ID: ${ssm:/telegram_bot_chatid}
@@ -102,6 +95,12 @@ functions:
           event: s3:ObjectCreated:*
           rules:
             - prefix: client/
+    iamRoleStatementsName: s3Trigger-openvpn-serverless-lambda-lambdaRole
+    iamRoleStatements:
+      - Effect: "Allow"        
+        Action:
+          - s3:GetObject        
+        Resource: "arn:aws:s3:::openvpn-bot-storage/client/*"
 
 resources:
   Resources:
@@ -112,12 +111,12 @@ resources:
           AttributeDefinitions:
             - AttributeName: login_id
               AttributeType: S
-            - AttributeName: timeStamp
-              AttributeType: S
+            - AttributeName: timestamp
+              AttributeType: N
           KeySchema:
             - AttributeName: login_id
               KeyType: HASH
-            - AttributeName: timeStamp
+            - AttributeName: timestamp
               KeyType: RANGE
           ProvisionedThroughput:
             ReadCapacityUnits: 1

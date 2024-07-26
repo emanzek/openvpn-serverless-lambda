@@ -1,13 +1,14 @@
-import string
-import random
+# Need rework with cryptography, dont use it! Simplify it, using "uuid"
 import datetime as date
 import logging
-from cryptography.fernet import Fernet
+import uuid
 from functions import dynamo_db as db
 from functions import ses_sender as ses
 
 logger = logging.getLogger()
-TOKEN_LEN = 32
+RETRY_ATTEMPT = 3
+LOGIN_TIME_LIMIT = 300    # seconds
+SESSION_TIME_LIMIT = 1800    # seconds
 
 
 class Authenticator:
@@ -16,92 +17,84 @@ class Authenticator:
         self.isAuthorized = False
     
     def start(self,object):
+        # human_time = self.time_now.strftime('%y%m%dT%H%M%SZ')
         epoch_time = self.time_now.timestamp()
-        human_time = self.time_now.strftime('%y%m%dT%H%M%SZ')
-        new_login_id = ''.join(epoch_time,object)
-        new_token = self.gen_token(TOKEN_LEN)
-        new_sessionToken = self.gen_sessionKey()
+        new_login_id = ''.join(object,epoch_time)
+        new_token = str(uuid.uuid4())
         params = {
                 'login_id': {'S': new_login_id},
+                'message_id': {'N': int(object)},
                 'token': {'S': new_token},
-                'timeStamp': {'S': epoch_time},
-                'sessionActive': {'BOOL': self.isAuthorized},
-                'sessionKey': {'B': new_sessionToken}
+                'timestamp': {'N': int(epoch_time)},
+                'sessionActive': {'BOOL': self.isAuthorized}
         }
 
         db.put_data(params)
-        encrypted_token = self.encrypt_message(new_token)
-
-        credentials = '-'.join(new_login_id,encrypted_token)
-        ses.send_mail(credentials)
-        logger.info("Login Info successfully sent!")
+        ses.send_mail(new_token)
+        logger.info("Login info successfully sent!")
 
         return None
     
     def login(self,object):
-        if len(object) > TOKEN_LEN:
-            parse_cred = object.split('-')
-            params = {
-                'Key': {
-                    'login_id': parse_cred[0]
-                }
-            }
-
-            login_session = db.get_data(params)
-            if login_session != None:
-                try:
-                    test_token = login_session['token']
-                    encrypt_key = login_session['sessionKey']
-                    decrypted_token = self.decrypt_message(parse_cred[1],encrypt_key)
-                    if decrypted_token == test_token:
-                        self.isAuthorized = True
-                        params = {
-                            'login_id': {'S': parse_cred[0]},
-                            'sessionActive': {'BOOL': self.isAuthorized}
-                        }
-                        db.put_data(params)
-                    else:
-                        raise Exception("Token unmatched!")
-                except Exception as e:
-                    return "Key unmatched {}".format(e) 
-            else:
-                return "No session found."
-        else:
-            raise Exception('This is not credentials.')
-
-    def isActive():
+        try:
+            uuid.UUID(object['token'])
+            if self.login_active(object):
+                return "Login successful!"
+            else: 
+                return "No active session matched, please login again."
+        except ValueError:
+            raise "This is not a token, I will ignore it."
         
-        params = {
-            'Key': {
-                'login_id': object
-            }
+
+    def login_active(self,object):
+        time_range = {
+            'min_time': int(self.time_now) - LOGIN_TIME_LIMIT,  # Set minimum time to find oldest time when /login send
+            'max_time': int(self.time_now)
         }
-        message = "Your activity still active. Able to proceed with another command"
-        session = db.get_data(params)
-        state = session['sessionActive']
-        return state
+        login_list = db.query_data(time_range)
+
+        # try find a matching timestamp
+        for session in login_list:
+            if object['token'] == session['token']['S']:
+                session_id = session['login_id']['S']
+                self.isAuthorized = True
+                params = {
+                            'login_id': {'S': session_id},
+                            'message_id': {'N': int(object['msg_id'])},
+                            'sessionActive': {'BOOL': self.isAuthorized}
+                }
+                db.put_data(params)
+                return True
+            else:
+                continue
+        
+        return False
+
+    def isActive(self,object):
+        test_id = int(object) - 2   # Refering to message_id from last sent by user.
+        time_range = {
+            'min_time': int(self.time_now) - SESSION_TIME_LIMIT,  # Session time should last only for 30 minutes
+            'max_time': int(self.time_now)
+        }
+        session_list = db.query_data(time_range)
+        for session in session_list:
+            if test_id == session['message_id']['N']:
+                session_id = session['login_id']['S']
+                if session['sessionActive']:
+                    params = {
+                            'login_id': {'S': session_id},
+                            'message_id': {'N': int(object)}
+                    }
+                    db.put_data(params) # Update the latest id for next command
+                    return True
+                else:
+                    return False
+            else:
+                continue
+        return False
     
     def revokeToken(data):
         return "Your activity has been terminated! Please login again to use other command."
-    
-    def gen_token(token_len):
-        char = string.ascii_letters + string.digits + string.punctuation
-        token = ''.join(random.choice(char) for i in range(token_len))
-        return token
-    
-    def gen_sessionKey():
-        key = Fernet.generate_key()
-        return key
-
-    def encrypt_message(data,key):
-        fernet = Fernet(key)
-        encrypted_message = fernet.encrypt(data.encode())
-        return encrypted_message
-    
-    def decrypt_message(data,key):
-        fernet = Fernet(key)
-        decrypted_message = fernet.decrypt(data).decode()
-        return decrypted_message
 
     
 
