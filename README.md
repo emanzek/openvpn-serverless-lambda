@@ -10,7 +10,7 @@ authorName: 'Serverless, Inc.'
 authorAvatar: 'https://avatars1.githubusercontent.com/u/13742415?s=200&v=4'
 -->
 
-# OpenVPN-bot on AWS
+# OpenVPN-bot on AWS (Serverless) - In Progress
 
 Why I make this? Well, I hate to pay a services that I didn't use frequently while I want a secured connection sometime in public. What a waste when you subscribed to a VPN service for $10/month or $4/month (with annual plan) but only use it once a week and not more than 2 hours per usage.
 
