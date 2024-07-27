@@ -12,7 +12,7 @@ authorAvatar: 'https://avatars1.githubusercontent.com/u/13742415?s=200&v=4'
 
 # OpenVPN-bot on AWS (Serverless) - In Progress
 
-Why I make this? Well, I hate to pay a services that I didn't use frequently while I want a secured connection sometime in public. What a waste when you subscribed to a VPN service for $10/month or $4/month (with annual plan) but only use it once a week and not more than 2 hours per usage.
+Why I make this? Well, I hate to pay a services when I didn't use it frequently but I still want a secured connection sometimes in public. I felt it was such a waste when  subscribed to a VPN service for $10/month or $4/month (with annual plan) but only use it once a week and not more than 2 hours per usage.
 
 Thank lord now I'm  in a cloud era and able to write these set of scripts consists of Serverless, AWS Lambda (Python), AWS Cloudformation, Telegram bot API and Shell script. Feel free to give a try and give some comment if got any. Cheers!
 

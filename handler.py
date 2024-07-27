@@ -57,7 +57,7 @@ def main(event, context):
             message = "Here's some list you could try with:\n /create - Create VPN connection.\n /destroy - Destroy VPN connection.\n /help - List all command."
             send_text(message)
         case '/stop':
-            message = "Revoking any access."
+            message = authentication.isActive(message_id)
             send_text(message)
         case _:
             try:

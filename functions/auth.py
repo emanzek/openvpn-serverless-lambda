@@ -93,8 +93,29 @@ class Authenticator:
                 continue
         return False
     
-    def revokeToken(data):
-        return "Your activity has been terminated! Please login again to use other command."
+    def revoke_session(self,object):
+        test_id = int(object) - 2   # Refering to message_id from last sent by user.
+        time_range = {
+            'min_time': int(self.time_now) - SESSION_TIME_LIMIT,  # Session time should last only for 30 minutes
+            'max_time': int(self.time_now)
+        }
+        try:
+            session_list = db.query_data(time_range)
+            for session in session_list:
+                if test_id == session['message_id']['N']:
+                    session_id = session['login_id']['S']
+                    if session['sessionActive']:
+                        self.isAuthorized = False
+                        params = {
+                                'login_id': {'S': session_id},
+                                'message_id': {'N': int(object)},
+                                'sessionActive': {'BOOL': self.isAuthorized}
+                        }
+                        db.put_data(params) # Update the latest id for next command
+                        logger.info("Session revoked!")
+                        return("Session revoked!")
+        except Exception as e:
+            return f"Error on revoke: {e}"
 
     
 
