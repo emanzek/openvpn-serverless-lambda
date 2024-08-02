@@ -2,8 +2,8 @@
 import datetime as date
 import logging
 import uuid
-from functions import dynamo_db as db
-from functions import ses_sender as ses
+from functions.services import dynamo_db as db
+from functions.services import ses_sender as ses
 
 logger = logging.getLogger()
 RETRY_ATTEMPT = 3
@@ -18,14 +18,14 @@ class Authenticator:
     
     def start(self,object):
         # human_time = self.time_now.strftime('%y%m%dT%H%M%SZ')
-        epoch_time = self.time_now.timestamp()
-        new_login_id = ''.join(object,epoch_time)
+        epoch_time = int(self.time_now.timestamp())
+        new_login_id = ''.join((str(object),str(epoch_time)))
         new_token = str(uuid.uuid4())
         params = {
                 'login_id': {'S': new_login_id},
-                'message_id': {'N': int(object)},
+                'message_id': {'N': str(object)},
                 'token': {'S': new_token},
-                'timestamp': {'N': int(epoch_time)},
+                'timestamp': {'N': str(epoch_time)},
                 'sessionActive': {'BOOL': self.isAuthorized}
         }
 
@@ -60,7 +60,7 @@ class Authenticator:
                 self.isAuthorized = True
                 params = {
                             'login_id': {'S': session_id},
-                            'message_id': {'N': int(object['msg_id'])},
+                            'message_id': {'N': object['msg_id']},
                             'sessionActive': {'BOOL': self.isAuthorized}
                 }
                 db.put_data(params)

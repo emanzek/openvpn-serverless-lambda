@@ -1,10 +1,11 @@
 import boto3
+import os
 
 mail = boto3.client('ses')
 
 def send_mail(token):
-    sender = "no-reply@example.com"
-    recipient = "aiman.zaidi.dev@gmail.com"
+    sender = "openvpn-bot.mail@example.xyz"
+    recipient = "recipient@example.com"
     subject = "Test Email from Boto3"
     body_text = "Here is your login token: {}\nPlease send it to bot to get authenticated.".format(token)
 
@@ -18,8 +19,7 @@ def send_mail(token):
         'Subject': {
             'Charset': 'UTF-8',
             'Data': subject
-        },
-        'Sender': sender
+        }
 }
 
     try:

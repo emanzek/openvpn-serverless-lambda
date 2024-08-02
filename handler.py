@@ -1,16 +1,16 @@
-# TODO: 1. Implement authentication, this need email and db service (DynamoDB, SES)
+# TODO: 1. Implement authentication, this need email and db service (DynamoDB, SES) - DONE
 #       2. Integrate with SNS for cloudformation status
 #       3. Organize code function
 #       4. Generalize the deployment steps
+#       5. This is nonsense! I need to create a local test environment first.
 
 import json
 import requests
 import logging
 import os
-from functions import auth
-from functions import ec2_instance as ec2
-from functions import s3_files as s3
-from functions import dynamo_db as db
+from functions.local import auth
+from functions.services import ec2_instance as ec2
+from functions.services import s3_files as s3
 
 logger = logging.getLogger()
 BOT_TOKEN = os.environ.get('BOT_TOKEN')

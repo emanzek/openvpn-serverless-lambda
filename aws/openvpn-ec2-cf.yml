@@ -1,0 +1,59 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  s3UploaderRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'  
+      Policies:
+        - PolicyName: s3-upload-only
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - 's3:PutObject'
+                  - 's3:GetObject'
+                Resource: 'arn:aws:s3:::openvpn-bot-storage/*'
+  instanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles: 
+        - !Ref s3UploaderRole
+
+  openvpnServer:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-003c463c8207b4dfa  # AMI id for Ubuntu 24.04
+      InstanceType: t3.micro
+      KeyName: pop_os_ec2     # This key only available in my pop_os
+      IamInstanceProfile: !Ref instanceProfile
+      SecurityGroups: 
+        - openvpn-sg-default
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          apt-get install -y unzip
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          ./aws/install
+          aws s3 cp s3://openvpn-bot-storage/src/openvpn-install.sh .
+          chmod +x openvpn-install.sh
+          ./openvpn-install.sh
+
+Outputs:
+  cloudformationRole:
+    Value: !Ref s3UploaderRole
+  cloudformationInstanceProfile:
+    Value: !Ref instanceProfile
+  ec2Created:
+    Value: !Ref openvpnServer
+  ec2PublicIp:
+    Value: !GetAtt openvpnServer.PublicIp

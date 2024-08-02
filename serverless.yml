@@ -54,6 +54,8 @@ functions:
       BOT_TOKEN: ${ssm:/telegram_bot_token}
       BOT_CHAT_ID: ${ssm:/telegram_bot_chatid}
       CF_TEMPLATE_URL: ${ssm:/cf_template_url}
+      SMTP_ACCESSKEY: ${ssm:/smtp_accesskey}
+      SMTP_SECRETKEY: ${ssm:/smtp_secretkey}
     events:
       - httpApi:
           path: /common

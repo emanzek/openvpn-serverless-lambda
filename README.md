@@ -16,15 +16,49 @@ Why I make this? Well, I hate to pay a services when I didn't use it frequently 
 
 Thank lord now I'm  in a cloud era and able to write these set of scripts consists of Serverless, AWS Lambda (Python), AWS Cloudformation, Telegram bot API and Shell script. Feel free to give a try and give some comment if got any. Cheers!
 
-## Requirement
+## 📝Requirement
 
-Ensure you have all of this before proceed to **Usage** section.
-- AWS account - Must be a verified account.
-- Telegram Bot - Refer to this [manual](www.google.com) to create a new bot and generate new token
-- Serverless - Refer to this [manual](www.google.com) to install a serverless tool
+I'm sorry if this project was complicated. A lot of tools were used and need to setup before proceeding to **Usage** section. But please bare with me, I will try to explain the setup as much details as possible.
+1. AWS account (verified):
+   - **AWS cli** - latest version. Refer here for the [manual](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) of installation.
+   - **IAM user** - admin privilege. Create the user with NoConsoleLogin but only programmatic access (Access key & Secret Key). Save the details to configure the AWS cli. 
+   - Find your terminal and start configure the credentials using command `aws configure` and insert the access key and secret key once prompted.
+   - **SES credentials** - verified identities.
+2. Serverless:
+   - We will mainly using serverless to develop and deploy the code into the AWS environment
+3. Telegram Bot:
+   - Basically you need to have a bot and a token to interact with it.
+   - Refer to this [manual](www.google.com) to create a new bot and generate new token
+4. Python:
+   - This project were developed using Python **3.12** so you must have a Python with minimum version of 3.0.
+   - **pip** installer - Python with version 3.4+ should already have it but if not, try to refer in [here](https://stackoverflow.com/a/6587528/13464580)
+   - **venv** - It is practical to have isolated python environment when developing the project. If you don't have it yet, refer to this [page](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/).  
+5. NodeJS:
+   - This project were developed using NodeJS **10.0.1**.
 
-## Usage
+## ⌛ Progress
 
+I still couldn't believe that I have created this mess. A lot of changes I have made and a lot of things that need to do too. Maybe this project already been made by others with better structure and better solution. However, I'm proud with myself able to bring out this kind of project until now.
+
+### 🎯 Goals
+
+There's such many ways to improve in this project in terms of code quality, security, consistency and many more. But here is what I could think of in the moment:
+
+  - This is nonsense! I need to create a local test environment first.
+  - Integrate with SNS for cloudformation status
+  - Organize code function
+  - Generalize the deployment steps
+
+
+### ✅ Completed
+
+Since this is my personal project, the pace of development definitely will not be consistent. However, progress are still progress. It's not perfect but it is better than nothing. So this is milestone that I have reached.
+  - Implement authentication, this need email and db service (DynamoDB, SES) - DONE 
+  - Adding progress tracker in [README.md](README.md)
+
+
+## 🏃Usage
+I need to think of how to streamline the procedure to deploy and start using it with comprehensive manual. In the same time, I also want to let others customize the functions more easily with a clear explanation.
 
 
 ### Deployment
@@ -95,13 +129,3 @@ serverless offline
 ```
 
 To learn more about the capabilities of `serverless-offline`, please refer to its [GitHub repository](https://github.com/dherault/serverless-offline).
-
-### Bundling dependencies
-
-In case you would like to include 3rd party dependencies, you will need to use a plugin called `serverless-python-requirements`. You can set it up by running the following command:
-
-```
-serverless plugin install -n serverless-python-requirements
-```
-
-Running the above will automatically add `serverless-python-requirements` to `plugins` section in your `serverless.yml` file and add it as a `devDependency` to `package.json` file. The `package.json` file will be automatically created if it doesn't exist beforehand. Now you will be able to add your dependencies to `requirements.txt` file (`Pipfile` and `pyproject.toml` is also supported but requires additional configuration) and they will be automatically injected to Lambda package during build process. For more details about the plugin's configuration, please refer to [official documentation](https://github.com/UnitedIncome/serverless-python-requirements).
