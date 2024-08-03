@@ -1,0 +1,19 @@
+{
+    "message": {
+        "message_id": 123,
+        "from": {
+            "id": 1234567890,
+            "is_bot": true,
+            "first_name": "openvpn-bot",
+            "username": "openvpn_serverless_bot"
+        },
+        "chat": {
+            "id": 1234567890,
+            "first_name": "foo",
+            "username": "bar",
+            "type": "private"
+        },
+        "date": 1722677015,
+        "text": "/login"
+    }
+}
