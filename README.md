@@ -44,7 +44,6 @@ I still couldn't believe that I have created this mess. A lot of changes I have 
 
 There's such many ways to improve in this project in terms of code quality, security, consistency and many more. But here is what I could think of in the moment:
 
-  - This is nonsense! I need to create a local test environment first.
   - Integrate with SNS for cloudformation status
   - Organize code function
   - Generalize the deployment steps
@@ -55,6 +54,7 @@ There's such many ways to improve in this project in terms of code quality, secu
 Since this is my personal project, the pace of development definitely will not be consistent. However, progress are still progress. It's not perfect but it is better than nothing. So this is milestone that I have reached.
   - Implement authentication, this need email and db service (DynamoDB, SES) - DONE 
   - Adding progress tracker in [README.md](README.md)
+  - Creating a simple local test based on python requests
 
 
 ## 🏃Usage

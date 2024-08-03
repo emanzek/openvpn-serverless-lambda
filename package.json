@@ -3,6 +3,6 @@
     "serverless-deployment-bucket": "^1.6.0",
     "serverless-iam-roles-per-function": "^3.2.0",
     "serverless-layers": "^2.8.5",
-    "serverless-python-requirements": "^6.1.0"
+    "serverless-offline": "^14.0.0"
   }
 }
