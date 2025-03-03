@@ -2,3 +2,4 @@ certifi
 charset_normalizer
 idna
 requests
+boto3
